@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@typescript-eslint/no-misused-new": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
+  }
+}
