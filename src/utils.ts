@@ -51,8 +51,7 @@ export function readTSConf () {
 
 export function createCustomRender (options: Less.Options & {prefix?: string}) {
   const { prefix = '~', ...lessOpts } = options
-  return function (css: string, { fileName: filename, logger, compilerOptions = readTSConf() }: InjectOptionsFromTSPlugin): string {
-    logger.log(`houquan: ${filename} ${compilerOptions.baseUrl}`)
+  return function (css: string, { fileName: filename, compilerOptions = readTSConf() }: InjectOptionsFromTSPlugin): string {
     let transforedCSS = ''
 
     const aliases = transformPathsToAliase(compilerOptions)
