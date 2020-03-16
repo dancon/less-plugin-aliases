@@ -5,18 +5,24 @@
  */
 
 import path from 'path'
-import fs from 'fs'
+import { Logger, normalizePath } from './utils'
 
 interface Options {
   prefix?: string
   aliases: Record<string, string | string[]>
+  logger?: Logger
+}
+
+const defaultLogger = {
+  log: console.log,
+  error: console.error
 }
 
 export default class LessAliasesPlugin {
   constructor(private options: Options) {}
 
   install (less: LessStatic, pluginManager: Less.PluginManager) {
-    const { prefix = '~', aliases } = this.options
+    const { prefix = '~', aliases, logger = defaultLogger } = this.options
 
     function resolve (filename: string) {
       if (filename.startsWith(prefix)) {
@@ -27,14 +33,19 @@ export default class LessAliasesPlugin {
 
         let resolvedPath: string | undefined
         if (Array.isArray(resolvedAliase)) {
-          resolvedPath = resolvedAliase.find((p) => fs.existsSync(path.join(p, restPath)))
+          for (let i = 0, len = resolvedAliase.length; i < len; i ++) {
+            resolvedPath = normalizePath(path.join(resolvedAliase[i], restPath))
+            if (resolvedPath) {
+              return resolvedPath
+            }
+          }
         } else {
-          resolvedPath = fs.existsSync(path.join(resolvedAliase, restPath)) ? resolvedAliase : undefined
+          resolvedPath = normalizePath(path.join(resolvedAliase, restPath))
         }
         if (!resolvedPath) {
           throw new Error(`Invalid aliase config for key: ${aliaseKey}`)
         }
-        return path.join(resolvedPath, restPath)
+        return resolvedPath
       }
 
       return filename
@@ -59,11 +70,33 @@ export default class LessAliasesPlugin {
       }
 
       loadFile(filename: string, currentDirectory: string, options: Record<string, unknown>, enviroment: unknown, callback: Function) {
-        return super.loadFile(resolve(filename), currentDirectory, options, enviroment, callback)
+        let resolved
+        try {
+          resolved = resolve(filename)
+        } catch(error) {
+          logger.error(error)
+        }
+        if (!resolved) {
+          const error = new Error(`[less-plugin-aliases]: '${filename}' not found.`)
+          logger.error(error)
+          throw error
+        }
+        return super.loadFile(resolved, currentDirectory, options, enviroment, callback)
       }
 
       loadFileSync(filename: string, currentDirectory: string, options: Record<string, unknown>, enviroment: unknown, callback: Function) {
-        return super.loadFileSync(resolve(filename), currentDirectory, options, enviroment, callback)
+        let resolved
+        try {
+          resolved = resolve(filename)
+        } catch(error) {
+          logger.error(error)
+        }
+        if (!resolved) {
+          const error = new Error(`[less-plugin-aliases]: '${filename}' not found.`)
+          logger.error(error)
+          throw error
+        }
+        return super.loadFileSync(resolved, currentDirectory, options, enviroment, callback)
       }
     }
 

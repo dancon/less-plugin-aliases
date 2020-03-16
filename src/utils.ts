@@ -24,6 +24,21 @@ export interface InjectOptionsFromTSPlugin {
   logger: Logger
 }
 
+const checkExtList = [ ".less", ".css" ]
+
+export function normalizePath (filename: string) {
+  if (/\.(?:less|css)$/i.test(filename)) {
+    return fs.existsSync(filename) ? filename : undefined
+  }
+
+  for (let i = 0, len = checkExtList.length; i < len; i ++) {
+    const ext = checkExtList[i]
+    if (fs.existsSync(`${filename}${ext}`)) {
+      return `${filename}${ext}`
+    }
+  }
+}
+
 export function transformPathsToAliase ({ paths, baseUrl }: tsModule.CompilerOptions = {}): Record<string, string[]> {
   const aliase: Record<string, string[]> = {}
   if (paths && baseUrl) {
@@ -51,7 +66,7 @@ export function readTSConf () {
 
 export function createCustomRender (options: Less.Options & {prefix?: string}) {
   const { prefix = '~', ...lessOpts } = options
-  return function (css: string, { fileName: filename, compilerOptions = readTSConf() }: InjectOptionsFromTSPlugin): string {
+  return function (css: string, { fileName: filename, logger, compilerOptions = readTSConf() }: InjectOptionsFromTSPlugin): string {
     let transforedCSS = ''
 
     const aliases = transformPathsToAliase(compilerOptions)
@@ -61,7 +76,8 @@ export function createCustomRender (options: Less.Options & {prefix?: string}) {
       plugins: [
         new LessPluginAliases({
           prefix,
-          aliases
+          aliases,
+          logger
         })
       ],
       ...lessOpts
