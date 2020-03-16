@@ -5,7 +5,10 @@
  */
 
 import path from 'path'
+import fs from 'fs'
 import less from 'less'
+import findUp from 'find-up'
+import JSON5 from 'json5'
 import tsModule from 'typescript/lib/tsserverlibrary'
 
 import LessPluginAliases from './index'
@@ -16,7 +19,7 @@ export interface Logger {
 }
 
 export interface InjectOptionsFromTSPlugin {
-  filename: string
+  fileName: string
   compilerOptions: tsModule.CompilerOptions
   logger: Logger
 }
@@ -36,9 +39,20 @@ export function transformPathsToAliase ({ paths, baseUrl }: tsModule.CompilerOpt
   return aliase
 }
 
+export function readTSConf () {
+  const tsconfPath = findUp.sync('tsconfig.json')
+
+  if (!tsconfPath) {
+    return {}
+  }
+  const tsconfigJSON = JSON5.parse(fs.readFileSync(tsconfPath).toString()) || {}
+  return tsconfigJSON.compilerOptions || {}
+}
+
 export function createCustomRender (options: Less.Options & {prefix?: string}) {
   const { prefix = '~', ...lessOpts } = options
-  return function (css: string, { filename, compilerOptions }: InjectOptionsFromTSPlugin): string {
+  return function (css: string, { fileName: filename, logger, compilerOptions = readTSConf() }: InjectOptionsFromTSPlugin): string {
+    logger.log(`houquan: ${filename} ${compilerOptions.baseUrl}`)
     let transforedCSS = ''
 
     const aliases = transformPathsToAliase(compilerOptions)
