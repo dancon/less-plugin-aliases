@@ -1,6 +1,6 @@
 {
   "name": "less-plugin-aliases",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "lib/index.js",
   "repository": "git@github.com:dancon/less-plugin-aliases.git",
   "author": "houquan <870301137@qq.com>",
