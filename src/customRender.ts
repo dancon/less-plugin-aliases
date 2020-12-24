@@ -6,4 +6,9 @@
 
 import { createCustomRender } from './utils'
 
-export = createCustomRender({prefix: '~'})
+/**
+ * less options
+ *
+ * @see http://lesscss.org/usage/#less-options
+ */
+export = createCustomRender({ prefix: '~', javascriptEnabled: true })
