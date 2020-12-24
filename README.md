@@ -2,7 +2,9 @@
 
 A less plugin work with typescript-plugin-css-modules
 
-## Work with webpack and [typscript-plugin-css-modules](https://github.com/mrmckeb/typescript-plugin-css-modules)
+# Integration method
+
+## 1. Work with webpack and [typscript-plugin-css-modules](https://github.com/mrmckeb/typescript-plugin-css-modules)
 
 ```json5
 {
@@ -18,12 +20,19 @@ A less plugin work with typescript-plugin-css-modules
       }
     ],
 
+    // @import '~antd/es/style/themes/default.less';
+    // ===>
+    // resovle to '/workspace/project/node_modules/antd/es/style/themes/default.less'
+    "paths": {
+      "antd/*": ["node_modules/antd/*"]
+    }
+
     // ...
   }
 }
 ```
 
-## Work alone with less
+## 2. Work alone with less
 
 ```ts
   import less from 'less'
